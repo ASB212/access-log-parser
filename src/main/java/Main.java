@@ -9,14 +9,12 @@ public class Main {
         int sum = firstNumber + secondNumber;
         int difference = firstNumber - secondNumber;
         int multiplication = firstNumber * secondNumber;
-        double quotient = (double) firstNumber / secondNumber; // Частное (с приведением к типу double)
-
-        // Вывод результатов
+        double quotient = (double) firstNumber / secondNumber;
         System.out.println("Сумма: " + sum);
         System.out.println("Разность: " + difference);
         System.out.println("Произведение: " + multiplication);
         System.out.println("Частное: " + quotient);
 
-        //scanner.close();  // Закрываем Scanner
+
     }
 }
