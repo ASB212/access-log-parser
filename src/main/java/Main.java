@@ -14,7 +14,5 @@ public class Main {
         System.out.println("Разность: " + difference);
         System.out.println("Произведение: " + multiplication);
         System.out.println("Частное: " + quotient);
-
-
     }
 }
