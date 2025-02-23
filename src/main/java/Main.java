@@ -20,7 +20,7 @@ public class Main {
 
             count++;
             System.out.println("Путь указан верно.");
-            System.out.println("Это файл номер " + count + ".");
+            System.out.println("Это файл # " + count + ".");
         }
     }
 }
