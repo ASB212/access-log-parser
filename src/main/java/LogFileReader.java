@@ -11,7 +11,7 @@ public class LogFileReader {
     }
 
     public void readFile() throws LineException {
-        int requests = 0;
+        Statistics statistics = new Statistics();
         int googlebotCount = 0;
         int yandexbotCount = 0;
 
@@ -27,35 +27,24 @@ public class LogFileReader {
                     throw new LineException("В строке № " + lineCount + ": Кол-во cимволов = " + length + " > допустимого значения 1024 ");
                 }
 
-                requests++;
+                LogEntry entry = new LogEntry(line);
+                statistics.addEntry(entry);
 
-                String userAgent = userAgent(line);
-                if (userAgent != null) {
-                    if (userAgent.contains("Googlebot")) {
-                        googlebotCount++;
-                    } else if (userAgent.contains("YandexBot")) {
-                        yandexbotCount++;
-                    }
+                UserAgent userAgent = entry.getUserAgent();
+                String userAgentString = userAgent.getBrowser() + "/" + userAgent.getOsType();
+                if (userAgentString.contains("Googlebot")) {
+                    googlebotCount++;
+                } else if (userAgentString.contains("YandexBot")) {
+                    yandexbotCount++;
                 }
             }
 
-            System.out.println("Всего запросов: " + requests);
-            System.out.println("доля запросов Googlebot: " + googlebotCount + " (" + (googlebotCount * 100.0 / requests) + "%)");
-            System.out.println("доля запросов YandexBot: " + yandexbotCount + " (" + (yandexbotCount * 100.0 / requests) + "%)");
-
+            System.out.println("Объём трафика: " + statistics.getTrafficRate() + " байт/час");
+            System.out.println("Общий объём: " + statistics.getTotalTraffic());
         } catch (LineException e) {
             System.err.println(e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private String userAgent(String logLine) {
-        int start = logLine.indexOf("\" \"") + 3;
-        int end = logLine.lastIndexOf("\"");
-        if (start >= 3 && end > start) {
-            return logLine.substring(start, end);
-        }
-        return null;
     }
 }
