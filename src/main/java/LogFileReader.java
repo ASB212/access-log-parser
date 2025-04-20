@@ -4,7 +4,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class LogFileReader {
-    private File file;
+    final File file;
 
     public LogFileReader(File file) {
         this.file = file;
