@@ -10,7 +10,7 @@ public class LogFileReader {
         this.file = file;
     }
 
-    public void readFile() {
+    public void readFile() throws LineException {
         int requests = 0;
         int googlebotCount = 0;
         int yandexbotCount = 0;
@@ -47,8 +47,6 @@ public class LogFileReader {
             System.err.println(e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
     }
 
