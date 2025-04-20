@@ -11,11 +11,13 @@ public class LogFileReader {
     }
 
     public void readFile() {
+        int requests = 0;
+        int googlebotCount = 0;
+        int yandexbotCount = 0;
+
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             int lineCount = 0;
-            int maxLength = 0;
-            int minLength = Integer.MAX_VALUE;
 
             while ((line = reader.readLine()) != null) {
                 lineCount++;
@@ -25,17 +27,21 @@ public class LogFileReader {
                     throw new LineException("В строке № " + lineCount + ": Кол-во cимволов = " + length + " > допустимого значения 1024 ");
                 }
 
-                if (length > maxLength) {
-                    maxLength = length;
-                }
-                if (length < minLength) {
-                    minLength = length;
+                requests++;
+
+                String userAgent = userAgent(line);
+                if (userAgent != null) {
+                    if (userAgent.contains("Googlebot")) {
+                        googlebotCount++;
+                    } else if (userAgent.contains("YandexBot")) {
+                        yandexbotCount++;
+                    }
                 }
             }
 
-            System.out.println("Кол-во строк в файле: " + lineCount);
-            System.out.println("Самая длинная строка в файле: " + maxLength);
-            System.out.println("Самая короткая строка в файле: " + (minLength == Integer.MAX_VALUE ? 0 : minLength));
+            System.out.println("Всего запросов: " + requests);
+            System.out.println("доля запросов Googlebot: " + googlebotCount + " (" + (googlebotCount * 100.0 / requests) + "%)");
+            System.out.println("доля запросов YandexBot: " + yandexbotCount + " (" + (yandexbotCount * 100.0 / requests) + "%)");
 
         } catch (LineException e) {
             System.err.println(e.getMessage());
@@ -44,5 +50,14 @@ public class LogFileReader {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    private String userAgent(String logLine) {
+        int start = logLine.indexOf("\" \"") + 3;
+        int end = logLine.lastIndexOf("\"");
+        if (start >= 3 && end > start) {
+            return logLine.substring(start, end);
+        }
+        return null;
     }
 }
