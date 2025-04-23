@@ -21,10 +21,10 @@ public class Main {
             count++;
             System.out.println("Путь указан верно.");
             System.out.println("Это файл № " + count + ".");
-
             LogFileReader logFileReader = new LogFileReader(file);
             logFileReader.readFile();
         }
 
     }
 }
+
