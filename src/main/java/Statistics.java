@@ -10,6 +10,8 @@ public class Statistics {
     private int requestCount;
     private final HashSet<String> existPages;
     private final HashMap<String, Integer> osRqstCount;
+    private final HashSet<String> notExistPages;
+    private final HashMap<String, Integer> browserRqstCount;
 
     public Statistics() {
         this.totalTraffic = 0;
@@ -18,7 +20,8 @@ public class Statistics {
         this.maxTime = null;
         this.existPages = new HashSet<>();
         this.osRqstCount = new HashMap<>();
-        
+        this.notExistPages = new HashSet<>();
+        this.browserRqstCount = new HashMap<>();
     }
 
     public void addEntry(LogEntry entry) {
@@ -33,9 +36,14 @@ public class Statistics {
         }
         if (entry.getResponseCode() == 200) {
             existPages.add(entry.getPath());
+        } else if (entry.getResponseCode() == 404) {
+            notExistPages.add(entry.getPath());
         }
         String os = entry.getUserAgent().getOsType();
         osRqstCount.put(os, osRqstCount.getOrDefault(os, 0) + 1);
+        requestCount++;
+        String browser = entry.getUserAgent().getBrowser();
+        browserRqstCount.put(browser, browserRqstCount.getOrDefault(browser, 0) + 1);
         requestCount++;
     }
 
@@ -50,8 +58,13 @@ public class Statistics {
         }
         return (double) totalTraffic / hoursBetween;
     }
+
     public HashSet<String> getExistPages() {
-       return new HashSet(existPages);
+        return new HashSet(existPages);
+    }
+
+    public HashSet<String> getNotExistPages() {
+        return new HashSet(notExistPages);
     }
 
     public HashMap<String, Double> getOsRqstCount() {
@@ -62,6 +75,24 @@ public class Statistics {
         }
 
         for (Map.Entry<String, Integer> entry : osRqstCount.entrySet()) {
+
+            double ratio = (double) entry.getValue() / requestCount;
+            ratio = Math.round(ratio * 100) / 100.0;
+
+            result.put(entry.getKey(), ratio);
+        }
+
+        return result;
+    }
+
+    public HashMap<String, Double> getBrowserRqstCount() {
+        HashMap<String, Double> result = new HashMap<>();
+        int requestCount = browserRqstCount.values().stream().mapToInt(Integer::intValue).sum();
+        if (requestCount == 0) {
+            return result;
+        }
+
+        for (Map.Entry<String, Integer> entry : browserRqstCount.entrySet()) {
 
             double ratio = (double) entry.getValue() / requestCount;
             ratio = Math.round(ratio * 100) / 100.0;
@@ -84,5 +115,7 @@ public class Statistics {
         return maxTime;
     }
 
-    public int getRequestCount() {return requestCount;}
+    public int getRequestCount() {
+        return requestCount;
+    }
 }

@@ -40,9 +40,10 @@ public class LogFileReader {
             }
 
             //System.out.println("Объём трафика: " + statistics.getTrafficRate() + " байт/час");
-            System.out.println("Общий объём: " + statistics.getRequestCount());
-            //System.out.println("Список: " + statistics.getExistPages());
-            System.out.println("Доля ОС: " + statistics.getOsRqstCount());
+            //System.out.println("Общий объём: " + statistics.getRequestCount());
+            //System.out.println("Список: " + statistics.getNotExistPages());
+            //System.out.println("Доля ОС: " + statistics.getOsRqstCount());
+            System.out.println("Доля браузер: " + statistics.getBrowserRqstCount());
         } catch (LineException e) {
             System.err.println(e.getMessage());
         } catch (IOException e) {
