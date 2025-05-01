@@ -1,10 +1,15 @@
 public class UserAgent {
     private final String osType;
     private final String browser;
+    private final String userAgentString;
 
     public UserAgent(String userAgentString) {
         this.osType = parseOsType(userAgentString);
         this.browser = parseBrowser(userAgentString);
+        this.userAgentString = userAgentString;
+    }
+    public boolean isBot() {
+        return userAgentString != null && userAgentString.toLowerCase().contains("bot");
     }
 
     private String parseOsType(String userAgent) {

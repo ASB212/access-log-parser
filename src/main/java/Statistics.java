@@ -2,6 +2,7 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Statistics {
     private long totalTraffic;
@@ -12,6 +13,9 @@ public class Statistics {
     private final HashMap<String, Integer> osRqstCount;
     private final HashSet<String> notExistPages;
     private final HashMap<String, Integer> browserRqstCount;
+    private int errorRqstCount;
+    private int nonBotRqstCount;
+    private final Set<String> uniqueNonBotIp;
 
     public Statistics() {
         this.totalTraffic = 0;
@@ -22,6 +26,9 @@ public class Statistics {
         this.osRqstCount = new HashMap<>();
         this.notExistPages = new HashSet<>();
         this.browserRqstCount = new HashMap<>();
+        this.errorRqstCount = 0;
+        this.nonBotRqstCount = 0;
+        this.uniqueNonBotIp = new HashSet<>();
     }
 
     public void addEntry(LogEntry entry) {
@@ -39,12 +46,47 @@ public class Statistics {
         } else if (entry.getResponseCode() == 404) {
             notExistPages.add(entry.getPath());
         }
+        if (entry.getResponseCode() >= 400 && entry.getResponseCode() < 600) {
+            errorRqstCount++;
+        }
+        if (!entry.getUserAgent().isBot()) {
+            nonBotRqstCount++;
+            uniqueNonBotIp.add(entry.getIpAddr());
+        }
         String os = entry.getUserAgent().getOsType();
         osRqstCount.put(os, osRqstCount.getOrDefault(os, 0) + 1);
         requestCount++;
         String browser = entry.getUserAgent().getBrowser();
         browserRqstCount.put(browser, browserRqstCount.getOrDefault(browser, 0) + 1);
         requestCount++;
+    }
+    public double getAverageVisitsPerHour() {
+        if (minTime == null || maxTime == null || minTime.equals(maxTime)) {
+            return 0.0;
+        }
+
+        long hoursBetween = ChronoUnit.HOURS.between(minTime, maxTime);
+        if (hoursBetween == 0) {
+            return nonBotRqstCount;
+        }
+        return (double) nonBotRqstCount / hoursBetween;
+    }
+    public double getAverageErrorRqstsPerHour() {
+        if (minTime == null || maxTime == null || minTime.equals(maxTime)) {
+            return 0.0;
+        }
+
+        long hoursBetween = ChronoUnit.HOURS.between(minTime, maxTime);
+        if (errorRqstCount == 0) {
+            return 0.0;
+        }
+        return (double) hoursBetween / errorRqstCount;
+    }
+    public double getAverageVisitsPerUser() {
+        if (uniqueNonBotIp.isEmpty()) {
+            return 0.0;
+        }
+        return (double) nonBotRqstCount / uniqueNonBotIp.size();
     }
 
     public double getTrafficRate() {
