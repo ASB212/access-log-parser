@@ -44,9 +44,12 @@ public class LogFileReader {
             //System.out.println("Список: " + statistics.getNotExistPages());
             //System.out.println("Доля ОС: " + statistics.getOsRqstCount());
             //System.out.println("Доля браузер: " + statistics.getBrowserRqstCount());
-            System.out.println("Ср.кол-во/ч: " + statistics.getAverageVisitsPerHour());
-            System.out.println("Ср.кол-во Err/ч: " + statistics.getAverageErrorRqstsPerHour());
-            System.out.println("Ср.кол-во uniquser: " + statistics.getAverageVisitsPerUser());
+            //System.out.println("Ср.кол-во/ч: " + statistics.getAverageVisitsPerHour());
+            //System.out.println("Ср.кол-во Err/ч: " + statistics.getAverageErrorRqstsPerHour());
+            //System.out.println("Ср.кол-во uniquser: " + statistics.getAverageVisitsPerUser());
+            System.out.println("Max запросов в сек: : " + statistics.getHighVisitsPerSecond());
+            System.out.println("Список: : " + statistics.getRefererDomain());
+            System.out.println("Max запросов uniquser: : " + statistics.getMaxVisitsPerUser());
         } catch (LineException e) {
             System.err.println(e.getMessage());
         } catch (IOException e) {

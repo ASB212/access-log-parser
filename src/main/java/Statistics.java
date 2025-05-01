@@ -1,8 +1,6 @@
-import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Statistics {
     private long totalTraffic;
@@ -16,6 +14,9 @@ public class Statistics {
     private int errorRqstCount;
     private int nonBotRqstCount;
     private final Set<String> uniqueNonBotIp;
+    private final Map<LocalDateTime, Integer> visitsSecond;
+    private final Set<String> refererDomain;
+    private final Map<String, Integer> visitsUser;
 
     public Statistics() {
         this.totalTraffic = 0;
@@ -29,6 +30,9 @@ public class Statistics {
         this.errorRqstCount = 0;
         this.nonBotRqstCount = 0;
         this.uniqueNonBotIp = new HashSet<>();
+        this.visitsSecond = new HashMap<>();
+        this.refererDomain = new HashSet<>();
+        this.visitsUser = new HashMap<>();
     }
 
     public void addEntry(LogEntry entry) {
@@ -52,6 +56,15 @@ public class Statistics {
         if (!entry.getUserAgent().isBot()) {
             nonBotRqstCount++;
             uniqueNonBotIp.add(entry.getIpAddr());
+            LocalDateTime second = entryTime.truncatedTo(ChronoUnit.SECONDS);
+            visitsSecond.merge(second, 1, Integer::sum);
+            visitsUser.merge(entry.getIpAddr(), 1, Integer::sum);
+        }
+        if (entry.getReferer() != null) {
+            String domain = extractDomain(entry.getReferer());
+            if (domain != null) {
+                refererDomain.add(domain);
+            }
         }
         String os = entry.getUserAgent().getOsType();
         osRqstCount.put(os, osRqstCount.getOrDefault(os, 0) + 1);
@@ -60,6 +73,40 @@ public class Statistics {
         browserRqstCount.put(browser, browserRqstCount.getOrDefault(browser, 0) + 1);
         requestCount++;
     }
+
+    private String extractDomain(String referer) {
+        if (referer == null || referer.equals("-") || referer.equals("\"-\"")) {
+            return null;
+        }
+
+        try {
+            String cleaned = referer.replaceAll("^\"|\"$|^https?://", "");
+
+            String domain = cleaned.split("[/?&]")[0].split(":")[0];
+
+            String[] parts = domain.split("\\.");
+            return (parts.length >= 2) ? parts[parts.length - 2] + "." + parts[parts.length - 1] : domain;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public int getHighVisitsPerSecond() {
+        return visitsSecond.values().stream()
+                .max(Integer::compareTo)
+                .orElse(0);
+    }
+
+    public Set<String> getRefererDomain() {
+        return Collections.unmodifiableSet(refererDomain);
+    }
+
+    public int getMaxVisitsPerUser() {
+        return visitsUser.values().stream()
+                .max(Integer::compareTo)
+                .orElse(0);
+    }
+
     public double getAverageVisitsPerHour() {
         if (minTime == null || maxTime == null || minTime.equals(maxTime)) {
             return 0.0;
@@ -71,6 +118,7 @@ public class Statistics {
         }
         return (double) nonBotRqstCount / hoursBetween;
     }
+
     public double getAverageErrorRqstsPerHour() {
         if (minTime == null || maxTime == null || minTime.equals(maxTime)) {
             return 0.0;
@@ -82,6 +130,7 @@ public class Statistics {
         }
         return (double) hoursBetween / errorRqstCount;
     }
+
     public double getAverageVisitsPerUser() {
         if (uniqueNonBotIp.isEmpty()) {
             return 0.0;
